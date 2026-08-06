@@ -1,0 +1,41 @@
+# ===== 敏感文件（绝不能传） =====
+.env
+*.log
+server.log
+server_err.log
+
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+.venv/
+venv/
+env/
+*.db
+*.sqlite3
+
+# ===== 本地数据 / 上传文件（运行时生成） =====
+data/
+uploads/
+models/
+
+# ===== 本地模型 / skill（不该进仓库） =====
+skills/
+.clawhub/
+
+# ===== 前端 =====
+frontend/node_modules/
+frontend/dist/
+node_modules/
+
+# ===== IDE / 系统 =====
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ===== 截图保留（README 引用，需要传） =====
+!screenshots/
