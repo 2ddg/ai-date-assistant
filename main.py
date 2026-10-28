@@ -6,6 +6,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
+from config import CORS_ORIGINS
 from database import init_db
 from routers import auth, chat, outfit, personas, spots
 from core.persona import ensure_default_personas
@@ -44,7 +45,7 @@ app = FastAPI(title="AI约会助手", version="1.0.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -59,17 +60,17 @@ app.include_router(personas.router)
 os.makedirs("data", exist_ok=True)
 os.makedirs("uploads", exist_ok=True)
 
+@app.get("/api/health")
+async def health():
+    return {"status": "ok", "message": "AI约会助手运行正常"}
+
+
 # 挂载上传文件目录（必须在前端挂载之前，因为 / 会吃掉所有路径）
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 # 挂载前端静态文件（如果已构建）
 if os.path.exists(FRONTEND_DIST):
     app.mount("/", StaticFiles(directory=FRONTEND_DIST, html=True), name="frontend")
-
-
-@app.get("/api/health")
-async def health():
-    return {"status": "ok", "message": "AI约会助手运行正常"}
 
 
 if __name__ == "__main__":

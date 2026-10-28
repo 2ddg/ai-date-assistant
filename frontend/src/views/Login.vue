@@ -1,57 +1,74 @@
 <template>
-  <div class="auth-page">
-    <div class="auth-card">
-      <h2 class="auth-title">
-        <el-icon :size="32" color="#ff6b9d"><ChatDotRound /></el-icon>
-        AI 约会助手
-      </h2>
-      <p class="auth-subtitle">登录你的恋爱军师</p>
-
-      <el-form :model="form" :rules="rules" ref="formRef" @submit.prevent="handleLogin">
-        <el-form-item prop="username">
-          <el-input
-            v-model="form.username"
-            placeholder="用户名"
-            size="large"
-            :prefix-icon="User"
-          />
-        </el-form-item>
-        <el-form-item prop="password">
-          <el-input
-            v-model="form.password"
-            type="password"
-            placeholder="密码"
-            size="large"
-            :prefix-icon="Lock"
-            show-password
-          />
-        </el-form-item>
-        <el-button
-          type="primary"
-          size="large"
-          :loading="loading"
-          @click="handleLogin"
-          style="width: 100%"
-        >
-          登录
-        </el-button>
-      </el-form>
-
-      <div class="auth-footer">
-        还没有账号？
-        <router-link to="/register" class="link">立即注册</router-link>
-      </div>
+  <AuthShell
+    label="SIGN IN"
+    index="01 / 02"
+    kicker="WELCOME BACK"
+    :heading="'先成为值得被爱的人，\n再遇见爱。'"
+    :lead="'一个不替你谈恋爱的 AI 军师：\n帮你看清场合、穿对衣服、选对地点。'"
+  >
+    <div class="auth-head">
+      <p class="page-kicker">THE LOVE LAB</p>
+      <h2>欢迎回来。</h2>
+      <p>登录你的私人恋爱军师，继续上一次的练习。</p>
     </div>
-  </div>
+
+    <el-form
+      ref="formRef"
+      :model="form"
+      :rules="rules"
+      label-position="top"
+      class="auth-form"
+      @submit.prevent="handleLogin"
+    >
+      <el-form-item label="用户名" prop="username">
+        <el-input
+          v-model="form.username"
+          placeholder="输入用户名"
+          size="large"
+          :prefix-icon="User"
+          autocomplete="username"
+        />
+      </el-form-item>
+      <el-form-item label="密码" prop="password">
+        <el-input
+          v-model="form.password"
+          type="password"
+          placeholder="输入密码"
+          size="large"
+          :prefix-icon="Lock"
+          show-password
+          autocomplete="current-password"
+          @keyup.enter="handleLogin"
+        />
+      </el-form-item>
+
+      <el-button
+        type="primary"
+        size="large"
+        :loading="loading"
+        class="submit-btn"
+        @click="handleLogin"
+      >
+        进入约会实验室
+        <el-icon class="el-icon--right"><Right /></el-icon>
+      </el-button>
+    </el-form>
+
+    <div class="auth-footer">
+      <span>还没有账号？</span>
+      <router-link to="/register" class="link">创建一个</router-link>
+    </div>
+  </AuthShell>
 </template>
 
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { User, Lock } from '@element-plus/icons-vue'
+import { User, Lock, Right } from '@element-plus/icons-vue'
 import { login } from '../api/auth.js'
 import { useUserStore } from '../stores/user.js'
+import AuthShell from '../components/AuthShell.vue'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -71,7 +88,7 @@ async function handleLogin() {
   try {
     const data = await login(form.value.username, form.value.password)
     userStore.setAuth(data.token, data.username)
-    ElMessage.success('登录成功！')
+    ElMessage.success('登录成功')
     router.push('/')
   } catch (e) {
     ElMessage.error(e.response?.data?.detail || '登录失败')
@@ -82,49 +99,61 @@ async function handleLogin() {
 </script>
 
 <style scoped>
-.auth-page {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #ff6b9d 0%, #feca57 100%);
+.auth-head {
+  margin-bottom: 28px;
 }
 
-.auth-card {
-  background: #fff;
-  border-radius: 16px;
-  padding: 40px;
-  width: 400px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
-}
-
-.auth-title {
-  text-align: center;
+.auth-head h2 {
   margin: 0 0 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
+  font-family: var(--font-serif);
+  font-size: 30px;
+  font-weight: 500;
+  letter-spacing: -0.6px;
+  color: var(--color-ink);
 }
 
-.auth-subtitle {
-  text-align: center;
-  color: #909399;
-  margin: 0 0 30px;
+.auth-head p:last-child {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 12.5px;
+  line-height: 1.7;
+}
+
+.auth-form :deep(.el-form-item) {
+  margin-bottom: 18px;
+}
+
+.auth-form :deep(.el-form-item__label) {
+  padding-bottom: 6px;
+  font-size: 11.5px;
+  letter-spacing: 0.4px;
+}
+
+.submit-btn {
+  width: 100%;
+  height: 46px;
+  margin-top: 8px;
+  font-size: 13.5px;
+  letter-spacing: 0.5px;
 }
 
 .auth-footer {
-  text-align: center;
-  margin-top: 20px;
-  color: #909399;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 22px;
+  color: var(--color-muted);
+  font-size: 12.5px;
 }
 
 .link {
-  color: #ff6b9d;
-  text-decoration: none;
+  color: var(--color-primary);
+  font-weight: 500;
+  border-bottom: 1px solid transparent;
+  transition: border-color var(--dur-fast) var(--ease-out);
 }
 
 .link:hover {
-  text-decoration: underline;
+  border-color: var(--color-primary);
 }
 </style>

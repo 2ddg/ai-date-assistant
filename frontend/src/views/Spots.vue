@@ -1,47 +1,61 @@
 <template>
-  <div class="spots-container">
-    <el-card class="ai-card">
-      <template #header>
-        <div class="card-header">
-          <el-icon :size="20"><MagicStick /></el-icon>
-          <span>约会地点推荐 · 接入百度地图真实 POI</span>
-          <el-tag type="success" size="small" effect="dark" style="margin-left: 8px">真实地址 / 电话 / 评分</el-tag>
-        </div>
-      </template>
+  <div class="spots-page fade-rise">
+    <header class="spots-hero">
+      <div class="hero-copy">
+        <p class="page-kicker">REAL PLACES · REAL DATES</p>
+        <h1 class="page-title">把约会，<br />放进真实的世界里。</h1>
+        <p class="page-subtitle">
+          接入百度地图真实地点数据。不是一份氛围清单，是能走进去、坐下来、点单的地方。
+        </p>
+      </div>
+      <div class="hero-meta">
+        <div><span>真实地址</span><strong>POI</strong></div>
+        <span class="meta-rule" />
+        <div><span>评分 / 电话</span><strong>LIVE</strong></div>
+        <span class="meta-rule" />
+        <div><span>数据来源</span><strong>百度地图</strong></div>
+      </div>
+    </header>
 
-      <el-form :model="form" label-width="80px">
-        <el-row :gutter="16">
-          <el-col :span="12">
-            <el-form-item label="城市">
-              <el-input
-                v-model="form.city"
-                placeholder="例如：成都、北京、上海、广州"
-                size="large"
-                clearable
-              />
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="预算">
-              <el-input
-                v-model="form.budget"
-                placeholder="如：人均50、免费、300以内、不限"
-                size="large"
-                clearable
-              />
-            </el-form-item>
-          </el-col>
-        </el-row>
+    <section class="search-panel">
+      <div class="panel-top">
+        <span class="panel-step">01 / 设定场景</span>
+        <span class="panel-source">POWERED BY BAIDU MAP</span>
+      </div>
+
+      <el-form :model="form" label-position="top" class="search-form">
+        <div class="form-grid">
+          <el-form-item label="城市">
+            <el-input
+              v-model="form.city"
+              placeholder="例如：成都、北京、上海、广州"
+              size="large"
+              clearable
+            />
+          </el-form-item>
+          <el-form-item label="预算">
+            <el-input
+              v-model="form.budget"
+              placeholder="如：人均 50、免费、300 以内、不限"
+              size="large"
+              clearable
+            />
+          </el-form-item>
+        </div>
 
         <el-form-item label="场景">
-          <el-checkbox-group v-model="form.categories">
-            <el-checkbox v-for="c in categoryOptions" :key="c" :label="c">{{ c }}</el-checkbox>
+          <el-checkbox-group v-model="form.categories" class="choice-row">
+            <el-checkbox v-for="c in categoryOptions" :key="c" :value="c">
+              {{ c }}
+            </el-checkbox>
           </el-checkbox-group>
         </el-form-item>
 
-        <el-form-item label="标签">
-          <el-checkbox-group v-model="form.tags">
-            <el-checkbox v-for="t in tagOptions" :key="t" :label="t">{{ t }}</el-checkbox>
+        <el-form-item label="氛围标签">
+          <el-checkbox-group v-model="form.tags" class="choice-row">
+            <el-checkbox v-for="t in tagOptions" :key="t" :value="t">
+              {{ t }}
+            </el-checkbox>
           </el-checkbox-group>
         </el-form-item>
 
@@ -50,13 +64,13 @@
             v-model="form.extra"
             type="textarea"
             :rows="2"
-            placeholder="例如：三里屯附近、第一次约会、女生喜欢猫、安静一点..."
+            placeholder="例如：三里屯附近、第一次约会、女生喜欢猫、安静一点…"
             maxlength="100"
             show-word-limit
           />
         </el-form-item>
 
-        <el-form-item>
+        <div class="form-actions">
           <el-button
             type="primary"
             size="large"
@@ -69,109 +83,107 @@
           <el-button
             v-if="mapUrl"
             size="large"
-            type="success"
-            plain
             @click="openMap"
           >
             <el-icon><MapLocation /></el-icon>
             在地图上查看
           </el-button>
-        </el-form-item>
-      </el-form>
-    </el-card>
-
-    <el-card class="result-card" style="margin-top: 16px">
-      <template #header>
-        <div class="card-header">
-          <el-icon :size="20"><LocationFilled /></el-icon>
-          <span>
-            推荐结果
-            <el-tag size="small" type="info" style="margin-left: 8px">{{ spots.length }} 个</el-tag>
-            <el-tag v-if="spots.length > 0" size="small" type="success" style="margin-left: 4px">真实地图数据</el-tag>
-          </span>
+          <span class="form-note">先选场景，再选心情。</span>
         </div>
-      </template>
+      </el-form>
+    </section>
 
-      <div v-if="loading" class="empty">
-        <el-icon :size="48" class="loading-icon"><Loading /></el-icon>
-        <p>正在调用百度地图搜索真实地点...</p>
-      </div>
-      <div v-else-if="spots.length === 0" class="empty">
-        <el-empty description="输入城市和需求，让 AI 从百度地图找真实约会地点" />
+    <section class="results-section">
+      <div class="results-head">
+        <div>
+          <p class="page-kicker">02 / RESULTS</p>
+          <h2>为你找到的地点</h2>
+        </div>
+        <span class="result-count">
+          {{ loading ? '搜索中' : `${spots.length} 个地点` }}
+        </span>
       </div>
 
-      <el-row v-else :gutter="16">
-        <el-col
+      <div v-if="loading" class="state-box">
+        <span class="loader-ring" />
+        <p>正在调用百度地图，寻找真实地点…</p>
+        <span class="state-sub">地址、评分、电话会一并带回来</span>
+      </div>
+
+      <div v-else-if="spots.length === 0" class="state-box">
+        <span class="state-mark"><el-icon><LocationFilled /></el-icon></span>
+        <p>输入城市和需求，让 AI 从百度地图里找一间真正能去的店。</p>
+        <span class="state-sub">第一次约会，地点比话术更重要。</span>
+      </div>
+
+      <div v-else class="spot-grid">
+        <article
           v-for="(spot, idx) in spots"
-          :key="(spot.name) + idx"
-          :xs="24"
-          :sm="12"
-          :md="8"
-          :lg="6"
-          style="margin-bottom: 16px"
+          :key="spot.name + idx"
+          class="spot-card hover-lift"
         >
-          <el-card :body-style="{ padding: 0 }" class="spot-card" shadow="hover">
-            <div class="spot-img-wrap">
-              <img
-                v-if="spot.image_url"
-                :src="spot.image_url"
-                :alt="spot.name"
-                class="spot-img"
-                loading="lazy"
-                referrerpolicy="no-referrer"
-                @error="onImgError"
-              />
-              <div v-else class="spot-placeholder">
-                <el-icon :size="40" color="#ff6b9d"><Picture /></el-icon>
-              </div>
-              <div class="spot-badge">
-                <el-tag :type="getTagType(spot.category)" size="small">
-                  {{ spot.category || '其他' }}
-                </el-tag>
-              </div>
-              <div v-if="spot.overall_rating" class="spot-rating">
-                <el-icon color="#ffb400"><Star /></el-icon>
-                {{ spot.overall_rating }}
-              </div>
+          <div class="spot-img-wrap">
+            <img
+              v-if="spot.image_url"
+              :src="spot.image_url"
+              :alt="spot.name"
+              class="spot-img"
+              loading="lazy"
+              referrerpolicy="no-referrer"
+              @error="onImgError"
+            />
+            <div v-else class="spot-placeholder">
+              <span>{{ String(idx + 1).padStart(2, '0') }}</span>
+              <el-icon :size="30"><Picture /></el-icon>
             </div>
-            <div class="spot-body">
-              <div class="spot-title">
-                <h3 class="spot-name" :title="spot.name">{{ spot.name }}</h3>
-                <span class="price">{{ spot.price_level }}</span>
-              </div>
-              <div v-if="spot.city || spot.area" class="spot-city">
-                <el-icon><Location /></el-icon>
-                {{ spot.city }}{{ spot.area ? ' · ' + spot.area : '' }}
-              </div>
-              <p class="spot-desc">{{ spot.description }}</p>
-              <div v-if="spot.tags" class="spot-tags">
-                <el-tag
-                  v-for="t in (spot.tags || '').split(',').slice(0, 4)"
-                  :key="t"
-                  size="small"
-                  effect="plain"
-                  class="spot-tag"
-                >
-                  {{ t.trim() }}
-                </el-tag>
-              </div>
-              <div v-if="spot.address" class="spot-address">
+            <span class="spot-badge">{{ spot.category || '地点' }}</span>
+            <span v-if="spot.overall_rating" class="spot-rating">
+              <el-icon><Star /></el-icon>
+              {{ spot.overall_rating }}
+            </span>
+          </div>
+
+          <div class="spot-body">
+            <div class="spot-title">
+              <h3 :title="spot.name">{{ spot.name }}</h3>
+              <span v-if="spot.price_level" class="price">{{ spot.price_level }}</span>
+            </div>
+
+            <p v-if="spot.city || spot.area" class="spot-city">
+              <el-icon><Location /></el-icon>
+              {{ spot.city }}{{ spot.area ? ' · ' + spot.area : '' }}
+            </p>
+
+            <p class="spot-desc">{{ spot.description || '这家店还没有被写进攻略，也许正适合你们。' }}</p>
+
+            <div v-if="spot.tags" class="spot-tags">
+              <span
+                v-for="t in (spot.tags || '').split(',').slice(0, 4)"
+                :key="t"
+                class="spot-tag"
+              >
+                {{ t.trim() }}
+              </span>
+            </div>
+
+            <div class="spot-facts">
+              <p v-if="spot.address">
                 <el-icon><MapLocation /></el-icon>
                 <span>{{ spot.address }}</span>
-              </div>
-              <div v-if="spot.phone" class="spot-address">
+              </p>
+              <p v-if="spot.phone">
                 <el-icon><Phone /></el-icon>
                 <span>{{ spot.phone }}</span>
-              </div>
-              <div v-if="spot.comment_num" class="spot-meta">
+              </p>
+              <p v-if="spot.comment_num">
                 <el-icon><ChatLineSquare /></el-icon>
-                {{ spot.comment_num }} 条评价
-              </div>
+                <span>{{ spot.comment_num }} 条真实评价</span>
+              </p>
             </div>
-          </el-card>
-        </el-col>
-      </el-row>
-    </el-card>
+          </div>
+        </article>
+      </div>
+    </section>
   </div>
 </template>
 
@@ -179,7 +191,7 @@
 import { ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import {
-  LocationFilled, Location, MapLocation, MagicStick, Loading, Picture, Star, Phone, ChatLineSquare
+  LocationFilled, Location, MapLocation, MagicStick, Picture, Star, Phone, ChatLineSquare,
 } from '@element-plus/icons-vue'
 import { aiRecommendSpots } from '../api/spots.js'
 
@@ -211,7 +223,7 @@ async function handleRecommend() {
     if (spots.value.length === 0) {
       ElMessage.warning(data.error || '没有找到匹配的真实地点，换个条件试试')
     } else {
-      ElMessage.success(`百度地图找到 ${spots.value.length} 个真实地点！`)
+      ElMessage.success(`百度地图找到 ${spots.value.length} 个真实地点`)
     }
   } catch (e) {
     ElMessage.error(e.response?.data?.detail || '调用百度地图失败，请重试')
@@ -227,15 +239,6 @@ function openMap() {
   }
 }
 
-function getTagType(category) {
-  const map = {
-    餐厅: 'danger', 咖啡厅: 'info', 酒吧: 'warning', 公园: 'success',
-    电影院: 'danger', 展览: '', 户外: 'success', 娱乐: 'warning', 体验: '', 书店: 'info',
-    美食: 'danger',
-  }
-  return map[category] || 'info'
-}
-
 function onImgError(e) {
   const img = e.target
   img.style.display = 'none'
@@ -243,73 +246,261 @@ function onImgError(e) {
   if (wrap && !wrap.querySelector('.spot-placeholder')) {
     const ph = document.createElement('div')
     ph.className = 'spot-placeholder'
-    ph.innerHTML = '<svg viewBox="0 0 24 24" width="40" height="40" fill="#ff6b9d"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 0 1 0-5 2.5 2.5 0 0 1 0 5z"/></svg>'
+    ph.innerHTML = '<span>✳</span>'
     wrap.appendChild(ph)
   }
 }
 </script>
 
 <style scoped>
-.spots-container {
-  max-width: 1300px;
+.spots-page {
+  max-width: 1240px;
   margin: 0 auto;
 }
 
-.card-header {
+.spots-hero {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 30px;
+  padding: 14px 2px 34px;
+}
+
+.hero-copy .page-title {
+  margin-top: 4px;
+}
+
+.hero-meta {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-weight: 600;
+  gap: 16px;
+  padding: 16px 18px;
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.025);
 }
 
-.ai-card,
-.result-card {
-  border-radius: 12px;
+.hero-meta div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
-.empty {
+.hero-meta span:first-child {
+  color: var(--color-muted-soft);
+  font-size: 8px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+}
+
+.hero-meta strong {
+  color: var(--color-body);
+  font-family: var(--font-serif);
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.meta-rule {
+  width: 1px;
+  height: 26px;
+  background: var(--color-hairline);
+}
+
+.search-panel {
+  padding: 20px 24px 22px;
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-lg);
+  background:
+    radial-gradient(600px 350px at 100% 0%, rgba(255, 107, 157, 0.07), transparent 65%),
+    rgba(36, 21, 25, 0.82);
+  box-shadow: var(--shadow-md);
+}
+
+.panel-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--color-hairline-soft);
+}
+
+.panel-step {
+  color: var(--color-primary);
+  font-size: 9px;
+  letter-spacing: 1.8px;
+}
+
+.panel-source {
+  color: var(--color-muted-soft);
+  font-size: 8px;
+  letter-spacing: 1.4px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 18px;
+}
+
+.search-form :deep(.el-form-item) {
+  margin-bottom: 15px;
+}
+
+.search-form :deep(.el-form-item__label) {
+  padding-bottom: 5px;
+  font-size: 10.5px;
+  letter-spacing: 0.4px;
+}
+
+.choice-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 0;
+}
+
+.search-form :deep(.el-checkbox) {
+  margin-right: 16px;
+  height: 24px;
+}
+
+.search-form :deep(.el-checkbox__label) {
+  font-size: 11.5px;
+  color: var(--color-muted);
+}
+
+.search-form :deep(.el-checkbox.is-checked .el-checkbox__label) {
+  color: var(--color-primary);
+}
+
+.form-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding-top: 4px;
+}
+
+.form-note {
+  margin-left: auto;
+  color: var(--color-muted-soft);
+  font-family: var(--font-serif);
+  font-size: 10.5px;
+  font-style: italic;
+}
+
+.results-section {
+  margin-top: 34px;
+}
+
+.results-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 16px;
+}
+
+.results-head h2 {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 25px;
+  font-weight: 500;
+  letter-spacing: -0.4px;
+  color: var(--color-ink);
+}
+
+.result-count {
+  color: var(--color-muted);
+  font-size: 10.5px;
+  letter-spacing: 0.5px;
+}
+
+.state-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 260px;
+  padding: 40px 24px;
+  border: 1px dashed var(--color-hairline);
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.018);
   text-align: center;
-  color: #909399;
-  padding: 40px 0;
 }
 
-.loading-icon {
-  animation: spin 1s linear infinite;
-  color: #ff6b9d;
+.state-box p {
+  margin: 14px 0 4px;
+  color: var(--color-body);
+  font-family: var(--font-serif);
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+.state-sub {
+  color: var(--color-muted-soft);
+  font-size: 10px;
+}
+
+.state-mark {
+  width: 46px;
+  height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-primary-line);
+  border-radius: 50%;
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+  font-size: 18px;
+}
+
+.loader-ring {
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--color-hairline);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spot-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
 }
 
 .spot-card {
-  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--color-hairline);
+  border-radius: 15px;
+  background: rgba(36, 21, 25, 0.84);
   overflow: hidden;
-  transition: all 0.3s;
-  height: 100%;
-  border: 1px solid #ebeef5;
-}
-
-.spot-card:hover {
-  transform: translateY(-4px);
-  border-color: #ff6b9d;
-  box-shadow: 0 12px 32px rgba(255, 107, 157, 0.18);
 }
 
 .spot-img-wrap {
   position: relative;
   width: 100%;
-  height: 140px;
+  height: 164px;
   overflow: hidden;
-  background: linear-gradient(135deg, #ffe4ec, #fff3d6);
+  background:
+    radial-gradient(240px 160px at 30% 20%, rgba(255, 107, 157, 0.16), transparent 70%),
+    var(--color-surface-strong);
 }
 
 .spot-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.3s;
+  transition: transform 520ms var(--ease-out);
 }
 
 .spot-card:hover .spot-img {
@@ -320,110 +511,192 @@ function onImgError(e) {
   width: 100%;
   height: 100%;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 8px;
+  color: rgba(255, 107, 157, 0.5);
+}
+
+.spot-placeholder span {
+  font-family: var(--font-serif);
+  font-size: 22px;
+  color: rgba(255, 255, 255, 0.18);
 }
 
 .spot-badge {
   position: absolute;
-  top: 8px;
-  left: 8px;
+  top: 10px;
+  left: 10px;
+  padding: 3px 9px;
+  border: 1px solid rgba(255, 107, 157, 0.25);
+  border-radius: var(--radius-full);
+  background: rgba(16, 8, 10, 0.66);
+  color: #ffadc9;
+  font-size: 9px;
+  backdrop-filter: blur(8px);
 }
 
 .spot-rating {
   position: absolute;
-  top: 8px;
-  right: 8px;
-  background: rgba(0, 0, 0, 0.6);
-  color: #ffb400;
-  padding: 2px 8px;
-  border-radius: 10px;
-  font-size: 12px;
-  font-weight: bold;
+  top: 10px;
+  right: 10px;
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: 3px;
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  background: rgba(16, 8, 10, 0.68);
+  color: var(--color-gold);
+  font-size: 9.5px;
+  font-weight: 600;
+  backdrop-filter: blur(8px);
 }
 
 .spot-body {
-  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: 15px 16px 14px;
 }
 
 .spot-title {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   justify-content: space-between;
-  gap: 8px;
+  gap: 10px;
   margin-bottom: 4px;
 }
 
-.spot-name {
+.spot-name,
+.spot-title h3 {
   margin: 0;
-  font-size: 15px;
-  color: #303133;
+  min-width: 0;
+  flex: 1;
+  color: var(--color-ink);
+  font-family: var(--font-serif);
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.4;
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
-  flex: 1;
 }
 
 .price {
-  font-weight: bold;
-  color: #ff6b9d;
-  font-size: 13px;
-  white-space: nowrap;
+  flex-shrink: 0;
+  color: var(--color-primary);
+  font-size: 10.5px;
+  font-weight: 500;
 }
 
 .spot-city {
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 12px;
-  color: #909399;
-  margin-bottom: 6px;
+  margin: 0 0 8px;
+  color: var(--color-muted-soft);
+  font-size: 9.5px;
 }
 
 .spot-desc {
-  font-size: 12.5px;
-  color: #606266;
-  line-height: 1.6;
-  margin: 0 0 8px;
+  min-height: 38px;
+  margin: 0 0 10px;
+  color: var(--color-muted);
+  font-size: 11px;
+  line-height: 1.7;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  min-height: 2.5em;
 }
 
 .spot-tags {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
-  margin-bottom: 6px;
+  margin-bottom: 11px;
 }
 
 .spot-tag {
-  font-size: 11px;
+  padding: 2px 7px;
+  border: 1px solid var(--color-hairline-soft);
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.025);
+  color: var(--color-muted);
+  font-size: 8.5px;
 }
 
-.spot-address {
+.spot-facts {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: auto;
+  padding-top: 10px;
+  border-top: 1px solid var(--color-hairline-soft);
+}
+
+.spot-facts p {
   display: flex;
   align-items: center;
-  gap: 4px;
-  font-size: 12px;
-  color: #909399;
-  margin-top: 4px;
+  gap: 5px;
+  margin: 0;
+  color: var(--color-muted-soft);
+  font-size: 9.5px;
+  line-height: 1.5;
+}
+
+.spot-facts p span {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.spot-meta {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 11px;
-  color: #c0c4cc;
-  margin-top: 4px;
+.spot-facts .el-icon {
+  flex-shrink: 0;
+  color: var(--color-muted-soft);
+}
+
+@media (max-width: 1040px) {
+  .spot-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .spots-hero {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 680px) {
+  .spots-hero {
+    padding-top: 4px;
+  }
+
+  .hero-meta {
+    display: none;
+  }
+
+  .search-panel {
+    padding: 18px;
+  }
+
+  .form-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .form-note {
+    display: none;
+  }
+
+  .spot-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .results-head {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 4px;
+  }
 }
 </style>

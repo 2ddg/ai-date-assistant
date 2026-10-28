@@ -1,4 +1,7 @@
+import logging
 import os
+import secrets
+
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -39,9 +42,23 @@ DATABASE_URL = (
 )
 
 # ============ JWT 认证配置 ============
-JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "ai-date-assistant-secret-key-change-me")
+JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
+if not JWT_SECRET_KEY:
+    JWT_SECRET_KEY = secrets.token_urlsafe(48)
+    logging.warning("JWT_SECRET_KEY 未配置，已生成临时密钥；服务重启后登录状态会失效")
 JWT_ALGORITHM = "HS256"
 JWT_EXPIRE_MINUTES = int(os.getenv("JWT_EXPIRE_MINUTES", "1440"))
 
+# ============ CORS 配置 ============
+CORS_ORIGINS = [
+    origin.strip()
+    for origin in os.getenv(
+        "CORS_ORIGINS",
+        "http://localhost:5173,http://127.0.0.1:5173,http://localhost:8080,http://127.0.0.1:8080",
+    ).split(",")
+    if origin.strip()
+]
+
 # ============ 其他 ============
 UPLOAD_DIR = "./uploads"
+MAX_UPLOAD_BYTES = int(os.getenv("MAX_UPLOAD_BYTES", str(5 * 1024 * 1024)))

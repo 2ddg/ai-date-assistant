@@ -1,3 +1,5 @@
+import json
+
 from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
@@ -77,7 +79,7 @@ async def send_message_stream(
     persona = db.get(Persona, data.persona_id)
     if persona is None:
         async def _error():
-            yield "data: " + "人格不存在" + "\n\n"
+            yield f"data: {json.dumps({'type': 'error', 'data': '人格不存在'}, ensure_ascii=False)}\n\n"
             yield "data: [DONE]\n\n"
         return StreamingResponse(_error(), media_type="text/event-stream")
 
@@ -110,7 +112,7 @@ async def send_message_stream(
                 db=stream_db,
             ):
                 full_answer += chunk
-                yield f"data: {chunk}\n\n"
+                yield f"data: {json.dumps({'type': 'chunk', 'data': chunk}, ensure_ascii=False)}\n\n"
             stream_db.add(ChatMessage(user_id=user_id, persona_id=data.persona_id, role="assistant", content=full_answer))
             stream_db.commit()
         finally:

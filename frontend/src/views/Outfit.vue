@@ -1,158 +1,170 @@
 <template>
-  <div class="outfit-container">
-    <el-row :gutter="20">
-      <el-col :span="24" :lg="12">
-        <el-card class="upload-card">
-          <template #header>
-            <div class="card-header">
-              <el-icon :size="20"><UploadFilled /></el-icon>
-              <span>上传穿搭照片</span>
-            </div>
-          </template>
+  <div class="outfit-page fade-rise">
+    <header class="outfit-hero">
+      <div>
+        <p class="page-kicker">THE LOOK · AI STYLIST</p>
+        <h1 class="page-title">穿对衣服，<br />也穿对自己。</h1>
+        <p class="page-subtitle">
+          上传今天的穿搭，AI 从配色、比例与场合三个维度给出评审。不是评判你，是帮你更自在地出现。
+        </p>
+      </div>
+      <div class="hero-note">
+        <span>✳</span>
+        <p>你不需要穿成别人喜欢的样子，<br />只需要穿成自己敢出门的样子。</p>
+      </div>
+    </header>
 
-          <el-upload
-            :show-file-list="false"
-            :auto-upload="false"
-            :on-change="handleFileChange"
-            accept="image/*"
-            class="upload-area"
-          >
-            <img v-if="previewUrl" :src="previewUrl" class="preview-img" />
-            <div v-else>
-              <el-icon :size="48" color="#ff6b9d"><Picture /></el-icon>
-              <p class="upload-tip">点击或拖拽上传照片</p>
-              <p class="upload-hint">支持 JPG / PNG / WebP</p>
-            </div>
-          </el-upload>
+    <div class="outfit-grid">
+      <section class="upload-panel">
+        <div class="panel-top">
+          <span class="panel-step">01 / 上传穿搭</span>
+          <span class="panel-source">JPG · PNG · WEBP</span>
+        </div>
 
-          <div class="analyze-form">
-            <el-form-item label="约会场合">
-              <el-select v-model="occasion" placeholder="选择场合" clearable>
-                <el-option label="餐厅约会" value="餐厅" />
-                <el-option label="公园散步" value="公园" />
-                <el-option label="电影院" value="电影院" />
-                <el-option label="咖啡厅" value="咖啡厅" />
-                <el-option label="正式场合" value="正式场合" />
-              </el-select>
-            </el-form-item>
+        <el-upload
+          :show-file-list="false"
+          :auto-upload="false"
+          :on-change="handleFileChange"
+          accept="image/*"
+          class="upload-area"
+        >
+          <div v-if="previewUrl" class="preview-wrap">
+            <img :src="previewUrl" class="preview-img" alt="穿搭预览" />
+            <span class="replace-hint">点击更换照片</span>
           </div>
-
-          <el-button
-            type="primary"
-            :loading="analyzing"
-            :disabled="!uploadedImageId"
-            @click="handleAnalyze"
-            style="width: 100%"
-          >
-            <el-icon><BrushFilled /></el-icon>
-            {{ analyzing ? '分析中...' : 'AI 穿搭分析' }}
-          </el-button>
-        </el-card>
-
-        <el-card class="result-card" style="margin-top: 16px" v-if="analysisResult">
-          <template #header>
-            <div class="card-header">
-              <el-icon :size="20"><Reading /></el-icon>
-              <span>本次分析结果</span>
-            </div>
-          </template>
-          <pre class="result-text">{{ analysisResult }}</pre>
-        </el-card>
-      </el-col>
-
-      <el-col :span="24" :lg="12">
-        <el-card class="history-card">
-          <template #header>
-            <div class="card-header">
-              <el-icon :size="20"><Clock /></el-icon>
-              <span>历史穿搭记录（点击查看详情）</span>
-              <el-button link size="small" @click="loadHistory" style="margin-left: auto">
-                <el-icon><Refresh /></el-icon>
-                刷新
-              </el-button>
-            </div>
-          </template>
-
-          <div v-if="historyList.length === 0" class="empty">
-            <el-empty description="暂无历史记录，先上传一张穿搭照片吧" />
+          <div v-else class="upload-empty">
+            <span class="upload-icon"><el-icon><UploadFilled /></el-icon></span>
+            <p>把今天的穿搭放进来</p>
+            <span>点击或拖拽上传 · 单张不超过 5MB</span>
           </div>
-          <div v-else class="history-list">
-            <div
-              v-for="item in historyList"
-              :key="item.id"
-              class="history-item"
-              @click="openDetail(item)"
-            >
-              <img v-if="item.url" :src="item.url" class="history-img" />
-              <div v-else class="history-img placeholder">
-                <el-icon :size="24" color="#909399"><Picture /></el-icon>
-              </div>
-              <div class="history-info">
-                <div class="history-header">
-                  <el-tag v-if="item.occasion" size="small" type="danger">
-                    {{ item.occasion }}
-                  </el-tag>
-                  <span class="time">{{ formatTime(item.time) }}</span>
-                </div>
-                <p class="history-analysis">
-                  <template v-if="item.analysis">
-                    {{ item.analysis.slice(0, 60) }}...
-                  </template>
-                  <span v-else class="no-analysis">（未分析）</span>
-                </p>
-              </div>
+        </el-upload>
+
+        <div class="occasion-field">
+          <label>约会场合</label>
+          <el-select v-model="occasion" placeholder="选择今天的场合" clearable>
+            <el-option label="餐厅约会" value="餐厅" />
+            <el-option label="公园散步" value="公园" />
+            <el-option label="电影院" value="电影院" />
+            <el-option label="咖啡厅" value="咖啡厅" />
+            <el-option label="正式场合" value="正式场合" />
+          </el-select>
+        </div>
+
+        <el-button
+          type="primary"
+          size="large"
+          :loading="analyzing"
+          :disabled="!uploadedImageId"
+          class="analyze-btn"
+          @click="handleAnalyze"
+        >
+          <el-icon><BrushFilled /></el-icon>
+          {{ analyzing ? '正在看你的穿搭…' : 'AI 穿搭评审' }}
+        </el-button>
+        <p class="panel-note">上传后可直接分析；更换照片不会删除历史记录。</p>
+      </section>
+
+      <section class="result-panel">
+        <div class="panel-top">
+          <span class="panel-step">02 / 评审结果</span>
+          <span class="panel-source">AI STYLIST</span>
+        </div>
+
+        <div v-if="analysisResult" class="analysis-wrap">
+          <div class="analysis-head">
+            <span class="analysis-mark">✳</span>
+            <div>
+              <h2>今日穿搭笔记</h2>
+              <p>{{ occasion || '未指定场合' }}</p>
             </div>
           </div>
-        </el-card>
-      </el-col>
-    </el-row>
+          <pre class="analysis-text">{{ analysisResult }}</pre>
+        </div>
 
-    <!-- 穿搭记录详情抽屉 -->
+        <div v-else class="result-empty">
+          <span class="result-mark"><el-icon><Reading /></el-icon></span>
+          <h3>还没有评审结果。</h3>
+          <p>上传一张全身照，选择场合，AI 会告诉你哪里好看、哪里可以更好。</p>
+          <ol>
+            <li><span>01</span>上传清晰、光线自然的照片</li>
+            <li><span>02</span>选择今天的约会场合</li>
+            <li><span>03</span>点击「AI 穿搭评审」</li>
+          </ol>
+        </div>
+      </section>
+    </div>
+
+    <section class="history-section">
+      <div class="history-head">
+        <div>
+          <p class="page-kicker">03 / ARCHIVE</p>
+          <h2>穿搭档案</h2>
+        </div>
+        <el-button link @click="loadHistory">
+          <el-icon><Refresh /></el-icon>
+          刷新
+        </el-button>
+      </div>
+
+      <div v-if="historyList.length === 0" class="history-empty">
+        还没有记录。第一张照片，可以是今天。
+      </div>
+
+      <div v-else class="history-grid">
+        <article
+          v-for="item in historyList"
+          :key="item.id"
+          class="history-card hover-lift"
+          @click="openDetail(item)"
+        >
+          <div class="history-img-wrap">
+            <img v-if="item.url" :src="item.url" class="history-img" :alt="item.occasion || '穿搭记录'" />
+            <div v-else class="history-placeholder">
+              <el-icon :size="24"><Picture /></el-icon>
+            </div>
+            <span v-if="item.occasion" class="history-occasion">{{ item.occasion }}</span>
+          </div>
+          <div class="history-body">
+            <p>{{ item.analysis ? item.analysis.slice(0, 72) + '…' : '这张照片还没做穿搭分析。' }}</p>
+            <span>{{ formatTime(item.time) }}</span>
+          </div>
+        </article>
+      </div>
+    </section>
+
     <el-drawer
       v-model="detailVisible"
-      title="穿搭记录详情"
+      title="穿搭记录"
       direction="rtl"
       size="480px"
     >
       <div v-if="currentDetail" class="detail-wrap">
         <div class="detail-img-wrap">
-          <img
-            v-if="currentDetail.url"
-            :src="currentDetail.url"
-            class="detail-img"
-          />
+          <img v-if="currentDetail.url" :src="currentDetail.url" class="detail-img" alt="穿搭详情" />
           <div v-else class="detail-img placeholder">
-            <el-icon :size="48" color="#909399"><Picture /></el-icon>
+            <el-icon :size="42"><Picture /></el-icon>
           </div>
         </div>
 
         <div class="detail-meta">
           <div class="meta-row">
-            <span class="meta-label">场合：</span>
-            <el-tag v-if="currentDetail.occasion" type="danger" size="small">
-              {{ currentDetail.occasion }}
-            </el-tag>
-            <span v-else class="meta-muted">无</span>
+            <span class="meta-label">场合</span>
+            <span>{{ currentDetail.occasion || '未指定' }}</span>
           </div>
           <div class="meta-row">
-            <span class="meta-label">分析时间：</span>
+            <span class="meta-label">时间</span>
             <span>{{ formatTime(currentDetail.time) }}</span>
           </div>
         </div>
 
         <div class="detail-analysis-section">
-          <div class="section-title">
-            <el-icon :size="16"><Reading /></el-icon>
-            AI 穿搭建议
-          </div>
-          <div v-if="currentDetail.analysis" class="analysis-text">
+          <p class="page-kicker">STYLE NOTE</p>
+          <h3>AI 穿搭建议</h3>
+          <div v-if="currentDetail.analysis" class="detail-analysis">
             {{ currentDetail.analysis }}
           </div>
-          <el-empty
-            v-else
-            description="这张照片还没做穿搭分析"
-            :image-size="80"
-          >
+          <div v-else class="detail-empty">
+            <p>这张照片还没做穿搭分析。</p>
             <el-button
               v-if="currentDetail.id"
               type="primary"
@@ -161,7 +173,7 @@
             >
               立即分析
             </el-button>
-          </el-empty>
+          </div>
         </div>
       </div>
     </el-drawer>
@@ -172,10 +184,10 @@
 import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import {
-  UploadFilled, Picture, BrushFilled, Reading, Clock, Refresh
+  UploadFilled, Picture, BrushFilled, Reading, Refresh,
 } from '@element-plus/icons-vue'
 import {
-  uploadImage, analyzeOutfit, listImages, getImageDetail
+  uploadImage, analyzeOutfit, listImages, getImageDetail,
 } from '../api/outfit.js'
 
 const previewUrl = ref('')
@@ -196,7 +208,7 @@ async function handleFileChange(file) {
     const data = await uploadImage(file.raw)
     uploadedImageId.value = data.image_id
     analysisResult.value = ''
-    ElMessage.success('上传成功，请选择场合后点击分析')
+    ElMessage.success('上传成功，选择场合后即可分析')
     loadHistory()
   } catch (e) {
     ElMessage.error('上传失败')
@@ -213,7 +225,7 @@ async function handleAnalyze() {
   try {
     const data = await analyzeOutfit(uploadedImageId.value, occasion.value)
     analysisResult.value = data.analysis
-    ElMessage.success('分析完成！')
+    ElMessage.success('分析完成')
     loadHistory()
   } catch (e) {
     ElMessage.error('分析失败，请重试')
@@ -253,7 +265,7 @@ async function analyzeFromDetail(imageId) {
     const data = await analyzeOutfit(imageId, currentDetail.value?.occasion || '')
     if (currentDetail.value) currentDetail.value.analysis = data.analysis
     analysisResult.value = data.analysis
-    ElMessage.success('分析完成！')
+    ElMessage.success('分析完成')
     loadHistory()
   } catch (e) {
     ElMessage.error('分析失败')
@@ -267,166 +279,434 @@ onMounted(loadHistory)
 </script>
 
 <style scoped>
-.outfit-container {
-  max-width: 1200px;
+.outfit-page {
+  max-width: 1240px;
   margin: 0 auto;
 }
 
-.card-header {
+.outfit-hero {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: 600;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 40px;
+  padding: 14px 2px 32px;
 }
 
-.upload-card,
-.result-card,
-.history-card {
-  border-radius: 12px;
+.outfit-hero .page-title {
+  margin-top: 4px;
+}
+
+.hero-note {
+  max-width: 290px;
+  padding: 16px 18px;
+  border: 1px solid var(--color-hairline);
+  border-radius: 3px 14px 14px 3px;
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.hero-note span {
+  color: var(--color-primary);
+  font-size: 11px;
+}
+
+.hero-note p {
+  margin: 7px 0 0;
+  color: var(--color-muted);
+  font-family: var(--font-serif);
+  font-size: 11.5px;
+  line-height: 1.8;
+}
+
+.outfit-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+  gap: 16px;
+  align-items: stretch;
+}
+
+.upload-panel,
+.result-panel {
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-lg);
+  background:
+    radial-gradient(520px 320px at 100% 0%, rgba(255, 107, 157, 0.055), transparent 70%),
+    rgba(36, 21, 25, 0.82);
+  box-shadow: var(--shadow-md);
+}
+
+.panel-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+  padding-bottom: 11px;
+  border-bottom: 1px solid var(--color-hairline-soft);
+}
+
+.panel-step {
+  color: var(--color-primary);
+  font-size: 9px;
+  letter-spacing: 1.7px;
+}
+
+.panel-source {
+  color: var(--color-muted-soft);
+  font-size: 8px;
+  letter-spacing: 1.4px;
 }
 
 .upload-area {
-  border: 2px dashed #dcdfe6;
-  border-radius: 12px;
-  padding: 40px;
-  text-align: center;
+  width: 100%;
+}
+
+.upload-area :deep(.el-upload) {
+  display: block;
+  width: 100%;
+}
+
+.upload-empty,
+.preview-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 260px;
+  border: 1px dashed var(--color-hairline);
+  border-radius: var(--radius-md);
+  background:
+    radial-gradient(300px 200px at 50% 0%, rgba(255, 107, 157, 0.07), transparent 70%),
+    rgba(17, 9, 12, 0.35);
   cursor: pointer;
-  transition: border-color 0.3s;
-  min-height: 200px;
+  overflow: hidden;
+  transition: border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
+}
+
+.upload-empty:hover,
+.preview-wrap:hover {
+  border-color: var(--color-primary-line);
+  background: rgba(255, 107, 157, 0.045);
+}
+
+.upload-icon {
+  width: 50px;
+  height: 50px;
   display: flex;
   align-items: center;
   justify-content: center;
+  margin-bottom: 14px;
+  border: 1px solid var(--color-primary-line);
+  border-radius: 50%;
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+  font-size: 20px;
 }
 
-.upload-area:hover {
-  border-color: #ff6b9d;
+.upload-empty p {
+  margin: 0 0 5px;
+  color: var(--color-ink);
+  font-family: var(--font-serif);
+  font-size: 17px;
+}
+
+.upload-empty span:last-child {
+  color: var(--color-muted-soft);
+  font-size: 9.5px;
+}
+
+.preview-wrap {
+  position: relative;
+  border-style: solid;
 }
 
 .preview-img {
-  max-width: 240px;
-  max-height: 240px;
-  border-radius: 8px;
-  object-fit: cover;
+  width: 100%;
+  height: 300px;
+  object-fit: contain;
+  background: #140b0e;
 }
 
-.upload-tip {
-  margin: 12px 0 4px;
-  color: #606266;
-  font-weight: 500;
+.replace-hint {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  padding: 4px 10px;
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-full);
+  background: rgba(16, 8, 10, 0.72);
+  color: var(--color-body);
+  font-size: 9px;
+  backdrop-filter: blur(8px);
 }
 
-.upload-hint {
-  margin: 0;
-  font-size: 12px;
-  color: #909399;
-}
-
-.analyze-form {
-  margin: 16px 0;
-}
-
-.empty {
-  padding: 40px 0;
-}
-
-.result-text {
-  white-space: pre-wrap;
-  font-family: inherit;
-  font-size: 14px;
-  line-height: 1.8;
-  color: #303133;
-  background: #fafafa;
-  padding: 16px;
-  border-radius: 8px;
-  margin: 0;
-  max-height: 340px;
-  overflow-y: auto;
-}
-
-.history-list {
+.occasion-field {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  max-height: 620px;
-  overflow-y: auto;
+  gap: 5px;
+  margin: 15px 0 13px;
 }
 
-.history-item {
+.occasion-field label {
+  color: var(--color-muted);
+  font-size: 10.5px;
+  letter-spacing: 0.4px;
+}
+
+.occasion-field :deep(.el-select) {
+  width: 100%;
+}
+
+.analyze-btn {
+  width: 100%;
+  height: 44px;
+}
+
+.panel-note {
+  margin: 10px 0 0;
+  color: var(--color-muted-soft);
+  font-size: 9.5px;
+  text-align: center;
+}
+
+.result-panel {
+  min-height: 430px;
+}
+
+.analysis-wrap {
+  animation: fade-rise 260ms var(--ease-out) both;
+}
+
+.analysis-head {
   display: flex;
+  align-items: center;
   gap: 12px;
-  padding: 10px;
-  border: 1px solid #ebeef5;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: all 0.25s;
+  margin-bottom: 16px;
 }
 
-.history-item:hover {
-  border-color: #ff6b9d;
-  box-shadow: 0 6px 18px rgba(255, 107, 157, 0.14);
-  transform: translateY(-1px);
-}
-
-.history-img {
-  width: 72px;
-  height: 72px;
-  border-radius: 8px;
-  object-fit: cover;
-  flex-shrink: 0;
-}
-
-.history-img.placeholder {
-  background: #f4f4f5;
+.analysis-mark {
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
+  border: 1px solid var(--color-primary-line);
+  border-radius: 50%;
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+  font-size: 15px;
 }
 
-.history-info {
+.analysis-head h2 {
+  margin: 0 0 2px;
+  font-family: var(--font-serif);
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--color-ink);
+}
+
+.analysis-head p {
+  margin: 0;
+  color: var(--color-muted-soft);
+  font-size: 9.5px;
+}
+
+.analysis-text {
+  max-height: 460px;
+  margin: 0;
+  padding: 18px 19px;
+  border: 1px solid var(--color-hairline-soft);
+  border-left: 2px solid var(--color-primary);
+  border-radius: 3px 12px 12px 3px;
+  background: rgba(17, 9, 12, 0.35);
+  color: var(--color-body);
+  font-family: var(--font-family);
+  font-size: 12.5px;
+  line-height: 1.9;
+  white-space: pre-wrap;
+  overflow-y: auto;
+}
+
+.result-empty {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   flex: 1;
-  min-width: 0;
+  padding: 12px 26px 24px;
 }
 
-.history-header {
+.result-mark {
+  width: 46px;
+  height: 46px;
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 6px;
+  justify-content: center;
+  margin-bottom: 16px;
+  border: 1px solid var(--color-hairline);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--color-muted);
+  font-size: 18px;
 }
 
-.time {
+.result-empty h3 {
+  margin: 0 0 8px;
+  font-family: var(--font-serif);
+  font-size: 24px;
+  font-weight: 500;
+  color: var(--color-ink);
+}
+
+.result-empty > p {
+  max-width: 380px;
+  margin: 0 0 24px;
+  color: var(--color-muted);
   font-size: 12px;
-  color: #909399;
-  margin-left: auto;
-  white-space: nowrap;
+  line-height: 1.8;
 }
 
-.history-analysis {
-  font-size: 12.5px;
-  color: #606266;
+.result-empty ol {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
   margin: 0;
-  line-height: 1.6;
+  padding: 0;
+  list-style: none;
+}
+
+.result-empty li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--color-muted);
+  font-size: 11px;
+}
+
+.result-empty li span {
+  color: var(--color-primary);
+  font-size: 8.5px;
+  letter-spacing: 1px;
+}
+
+.history-section {
+  margin-top: 32px;
+}
+
+.history-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.history-head h2 {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 25px;
+  font-weight: 500;
+  color: var(--color-ink);
+}
+
+.history-empty {
+  padding: 34px 22px;
+  border: 1px dashed var(--color-hairline);
+  border-radius: var(--radius-lg);
+  color: var(--color-muted-soft);
+  font-size: 11.5px;
+  text-align: center;
+}
+
+.history-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.history-card {
+  border: 1px solid var(--color-hairline);
+  border-radius: 13px;
+  background: rgba(36, 21, 25, 0.82);
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.history-img-wrap {
+  position: relative;
+  height: 180px;
+  background:
+    radial-gradient(220px 140px at 30% 20%, rgba(255, 107, 157, 0.12), transparent 70%),
+    var(--color-surface-strong);
+  overflow: hidden;
+}
+
+.history-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 520ms var(--ease-out);
+}
+
+.history-card:hover .history-img {
+  transform: scale(1.04);
+}
+
+.history-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-muted-soft);
+}
+
+.history-occasion {
+  position: absolute;
+  top: 9px;
+  left: 9px;
+  padding: 3px 8px;
+  border: 1px solid rgba(255, 107, 157, 0.24);
+  border-radius: var(--radius-full);
+  background: rgba(16, 8, 10, 0.68);
+  color: #ffadc9;
+  font-size: 8.5px;
+  backdrop-filter: blur(8px);
+}
+
+.history-body {
+  padding: 12px 13px 13px;
+}
+
+.history-body p {
+  min-height: 38px;
+  margin: 0 0 8px;
+  color: var(--color-muted);
+  font-size: 10.5px;
+  line-height: 1.7;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
-.no-analysis {
-  color: #c0c4cc;
+.history-body span {
+  color: var(--color-muted-soft);
+  font-size: 8.5px;
 }
 
-/* 详情抽屉 */
+/* Drawer */
 .detail-wrap {
-  padding: 4px 4px 20px;
+  padding: 2px 2px 24px;
 }
 
 .detail-img-wrap {
   width: 100%;
-  margin-bottom: 20px;
-  border-radius: 12px;
+  margin-bottom: 18px;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-strong);
   overflow: hidden;
-  background: linear-gradient(135deg, #ffe4ec, #fff3d6);
 }
 
 .detail-img {
@@ -434,61 +714,126 @@ onMounted(loadHistory)
   max-height: 320px;
   object-fit: contain;
   display: block;
-  background: #fff;
+  background: #140b0e;
 }
 
 .detail-img.placeholder {
-  height: 240px;
+  height: 220px;
   display: flex;
   align-items: center;
   justify-content: center;
+  color: var(--color-muted-soft);
 }
 
 .detail-meta {
-  background: #fafafa;
-  border-radius: 10px;
-  padding: 12px 16px;
-  margin-bottom: 18px;
+  margin-bottom: 20px;
+  padding: 12px 14px;
+  border: 1px solid var(--color-hairline-soft);
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.025);
 }
 
 .meta-row {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 4px 0;
-  font-size: 13.5px;
+  gap: 12px;
+  padding: 3px 0;
+  color: var(--color-body);
+  font-size: 11.5px;
 }
 
 .meta-label {
-  color: #909399;
-  width: 72px;
+  width: 46px;
   flex-shrink: 0;
+  color: var(--color-muted-soft);
+  font-size: 10px;
 }
 
-.meta-muted {
-  color: #c0c4cc;
+.detail-analysis-section h3 {
+  margin: 0 0 10px;
+  font-family: var(--font-serif);
+  font-size: 19px;
+  font-weight: 500;
+  color: var(--color-ink);
 }
 
-.section-title {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-weight: 600;
-  color: #303133;
-  margin-bottom: 10px;
-  font-size: 14px;
-}
-
-.analysis-text {
+.detail-analysis {
+  max-height: 340px;
+  padding: 15px 16px;
+  border: 1px solid var(--color-hairline-soft);
+  border-left: 2px solid var(--color-primary);
+  border-radius: 3px 10px 10px 3px;
+  background: rgba(255, 255, 255, 0.025);
+  color: var(--color-body);
+  font-size: 12px;
+  line-height: 1.9;
   white-space: pre-wrap;
-  background: #fff6fa;
-  border: 1px solid #ffdce8;
-  border-radius: 10px;
-  padding: 14px 16px;
-  font-size: 13.5px;
-  line-height: 1.8;
-  color: #303133;
-  max-height: 320px;
   overflow-y: auto;
+}
+
+.detail-empty {
+  padding: 20px;
+  border: 1px dashed var(--color-hairline);
+  border-radius: var(--radius-md);
+  text-align: center;
+}
+
+.detail-empty p {
+  margin: 0 0 14px;
+  color: var(--color-muted);
+  font-size: 11.5px;
+}
+
+@media (max-width: 1040px) {
+  .history-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .outfit-hero {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .hero-note {
+    display: none;
+  }
+
+  .outfit-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .result-panel {
+    min-height: 0;
+  }
+}
+
+@media (max-width: 700px) {
+  .outfit-hero {
+    padding-top: 4px;
+  }
+
+  .history-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .upload-panel,
+  .result-panel {
+    padding: 16px;
+  }
+
+  .result-empty {
+    padding: 8px 4px 18px;
+  }
+
+  .history-img-wrap {
+    height: 150px;
+  }
+}
+
+@media (max-width: 460px) {
+  .history-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 </style>

@@ -39,3 +39,5 @@ desktop.ini
 
 # ===== 截图保留（README 引用，需要传） =====
 !screenshots/
+# 排除自拍等非运行截图（私密照片不公开）
+screenshots/自拍/

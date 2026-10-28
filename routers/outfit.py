@@ -8,7 +8,7 @@ from core.vision_client import analyze_outfit
 from database import get_db
 from models.date_spot import OutfitImage
 from security import get_current_user_id
-from config import UPLOAD_DIR
+from config import MAX_UPLOAD_BYTES, UPLOAD_DIR
 
 router = APIRouter(prefix="/api/outfit", tags=["穿搭评价"])
 
@@ -26,10 +26,14 @@ async def upload_image(
     if ext not in ALLOWED_EXT:
         raise HTTPException(status_code=400, detail="仅支持 jpg/jpeg/png/webp 图片")
 
+    contents = await file.read(MAX_UPLOAD_BYTES + 1)
+    if len(contents) > MAX_UPLOAD_BYTES:
+        raise HTTPException(status_code=413, detail="图片不能超过 5MB")
+
     filename = f"{uuid.uuid4().hex}{ext}"
     file_path = os.path.join(UPLOAD_DIR, filename)
     with open(file_path, "wb") as f:
-        f.write(await file.read())
+        f.write(contents)
 
     image = OutfitImage(user_id=user_id, file_path=file_path)
     db.add(image)
