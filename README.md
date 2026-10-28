@@ -15,17 +15,17 @@
 
 ## 📸 运行截图
 
-### 1. AI 对话
-![AI 对话](screenshots/运行图/ai对话.png)
+### 1. 登录 / 注册（深色玫瑰）
+![登录](screenshots/login.png)  ![注册](screenshots/register.png)
 
-### 2. 穿搭评价
-![穿搭评价](screenshots/运行图/穿搭评价.png)
+### 2. AI 对话
+![AI 对话](screenshots/chat.png)
 
-### 3. 历史穿搭记录
-![历史穿搭记录](screenshots/运行图/历史穿搭记录.png)
+### 3. 穿搭评价
+![穿搭评价](screenshots/outfit.png)
 
-### 4. 约会地点推荐（真实地图 POI）
-![约会地点](screenshots/运行图/约会地点.png)
+### 4. 约会地点推荐
+![约会地点](screenshots/spots.png)
 
 ## 🏗️ 架构
 
