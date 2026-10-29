@@ -18,7 +18,6 @@ env/
 # ===== 本地数据 / 上传文件（运行时生成） =====
 data/
 uploads/
-models/
 
 # ===== 本地模型 / skill（不该进仓库） =====
 skills/

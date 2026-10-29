@@ -7,6 +7,7 @@ COPY frontend/ .
 RUN npm run build
 
 # ---- Stage 2: 后端 + 内置前端 ----
+# rebuild: include models/ (fix ModuleNotFoundError)
 FROM python:3.11-slim
 WORKDIR /app
 COPY requirements.txt .
